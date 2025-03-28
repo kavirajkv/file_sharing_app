@@ -1,0 +1,38 @@
+version: '3'
+
+services:
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
+
+  db:
+    image: postgres:latest
+    container_name: postgres
+    ports:
+      - "5431:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=fileshare
+
+  go_app:
+    image : fileshare:v1
+    container_name: fileshare
+    ports:
+      - "8080:8080"
+    environment:
+      - PG_PASSWORD=postgres
+      - PG_HOST=db
+      - PG_PORT=5432
+      - JWT_SECRET=crocodileEgg
+      - AWS_S3_REGION=
+      - AWS_S3_BUCKET=
+      - REDIS_URL=redis
+      - AWS_ACCESS_KEY_ID=
+      - AWS_SECRET_ACCESS_KEY=
+    depends_on:
+      - redis
+      - db
+    restart: on-failure
