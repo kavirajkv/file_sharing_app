@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"time"
+	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -119,6 +120,18 @@ func GetFiles(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var files []Files
+
+	cacheKey := fmt.Sprintf("user_files:%s", username)
+	val,err:=RedisClient.Get(context.Background(), cacheKey).Result()
+	//if cache hit
+	if err == nil {
+		json.Unmarshal([]byte(val), &files)
+		json.NewEncoder(w).Encode(files)
+		return
+	}
+
+	//if cache miss
 	rows, err := db.Query(`SELECT fileid,filename, url, uploaded_at, expiry_at, filesize FROM userfiles WHERE userid=(SELECT userid FROM users WHERE username=$1)`, username)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -126,7 +139,7 @@ func GetFiles(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	var files []Files
+	
 	for rows.Next() {
 		var file Files
 		err = rows.Scan(&file.File_id,&file.Filename, &file.Url, &file.UploadedAt, &file.Expiresat, &file.Size)
@@ -136,6 +149,10 @@ func GetFiles(w http.ResponseWriter, r *http.Request) {
 		}
 		files = append(files, file)
 	}
+
+	//setting cache
+	cacheValue, _ := json.Marshal(files)
+	RedisClient.Set(context.Background(), cacheKey, cacheValue, time.Minute*5)
 
 	json.NewEncoder(w).Encode(files)
 }

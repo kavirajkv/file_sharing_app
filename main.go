@@ -7,6 +7,7 @@ import (
 	 "log"
 	 "net/http"
 	 "fileshare/routes"
+	 "fileshare/middleware/fileshare"
 )
 
 func loadenv() {
@@ -22,6 +23,7 @@ func main() {
 	fmt.Println("Initializing database..")
 	db.Initdb()
 	fmt.Println("Database initialized..")
+	fileshare.InitRedis()
 
 	r := routes.Router()
 	fmt.Println("Server started on port 8080")
