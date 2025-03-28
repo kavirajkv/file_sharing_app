@@ -104,7 +104,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 }
 
 
-func authenticate(next http.HandlerFunc)http.HandlerFunc{
+func Authenticate(next http.HandlerFunc)http.HandlerFunc{
 	return func(w http.ResponseWriter,r *http.Request){
 		cookie,err:=r.Cookie("token")
 		if err!=nil{
