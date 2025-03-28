@@ -107,3 +107,35 @@ func Uploadfile(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(msg)
 }
 
+
+//function to get list of all files shred by the user
+func GetFiles(w http.ResponseWriter, r *http.Request) {
+	db := db.ConnectDB()
+	defer db.Close()
+
+	username, ok := r.Context().Value("username").(string)
+	if !ok {
+		http.Error(w, "Username not found in context", http.StatusInternalServerError)
+		return
+	}
+
+	rows, err := db.Query(`SELECT filename, url, uploaded_at, expiry_at, filesize FROM userfiles WHERE userid=(SELECT userid FROM users WHERE username=$1)`, username)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	var files []Files
+	for rows.Next() {
+		var file Files
+		err = rows.Scan(&file.Filename, &file.Url, &file.UploadedAt, &file.Expiresat, &file.Size)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		files = append(files, file)
+	}
+
+	json.NewEncoder(w).Encode(files)
+}
