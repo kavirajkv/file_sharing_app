@@ -18,7 +18,7 @@ services:
       - POSTGRES_DB=fileshare
 
   go_app:
-    image : fileshare:v1
+    image : kavirajkv/fileshare:v1
     container_name: fileshare
     ports:
       - "8080:8080"
