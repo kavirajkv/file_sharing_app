@@ -198,3 +198,41 @@ func DeleteFile(w http.ResponseWriter, r *http.Request) {
 	msg := Response{Message: "File deleted successfully"}
 	json.NewEncoder(w).Encode(msg)
 }
+
+
+//function to search file by file name
+func SearchFile(w http.ResponseWriter, r *http.Request) {
+	db := db.ConnectDB()
+	defer db.Close()
+
+	var file_name SearchFileRequest
+	err := json.NewDecoder(r.Body).Decode(&file_name)
+	if err != nil {
+		http.Error(w, "Provide proper file name", http.StatusBadRequest)
+		return
+	}
+
+	username, ok := r.Context().Value("username").(string)
+	if !ok {
+		http.Error(w, "Username not found in context", http.StatusInternalServerError)
+		return
+	}
+
+	rows, err := db.Query(`SELECT fileid,filename, url, uploaded_at, expiry_at, filesize  FROM userfiles WHERE filename=$1 AND userid=(SELECT userid FROM users WHERE username=$2)`, file_name.Filename, username)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	var file Files
+	for rows.Next() {
+		err = rows.Scan(&file.File_id,&file.Filename, &file.Url, &file.UploadedAt, &file.Expiresat, &file.Size)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+
+	json.NewEncoder(w).Encode(file)
+}

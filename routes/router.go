@@ -21,6 +21,7 @@ func Router() *mux.Router {
 	r.HandleFunc("/files", auth.Authenticate(fileshare.GetFiles)).Methods("GET")
 	r.HandleFunc("/share", auth.Authenticate(fileshare.ShareFile)).Methods("GET")
 	r.HandleFunc("/delete", auth.Authenticate(fileshare.DeleteFile)).Methods("DELETE")
+	r.HandleFunc("/search", auth.Authenticate(fileshare.SearchFile)).Methods("GET")
 
 	return r
 }

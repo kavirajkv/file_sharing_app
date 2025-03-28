@@ -38,3 +38,7 @@ type ShareFileResponse struct {
 	Url       string    `json:"url"`
 	Expiresat time.Time `json:"expires_at"`
 }
+
+type SearchFileRequest struct {
+	Filename string `json:"filename"`
+}
