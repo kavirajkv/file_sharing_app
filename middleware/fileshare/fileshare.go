@@ -119,7 +119,7 @@ func GetFiles(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rows, err := db.Query(`SELECT filename, url, uploaded_at, expiry_at, filesize FROM userfiles WHERE userid=(SELECT userid FROM users WHERE username=$1)`, username)
+	rows, err := db.Query(`SELECT fileid,filename, url, uploaded_at, expiry_at, filesize FROM userfiles WHERE userid=(SELECT userid FROM users WHERE username=$1)`, username)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -129,7 +129,7 @@ func GetFiles(w http.ResponseWriter, r *http.Request) {
 	var files []Files
 	for rows.Next() {
 		var file Files
-		err = rows.Scan(&file.Filename, &file.Url, &file.UploadedAt, &file.Expiresat, &file.Size)
+		err = rows.Scan(&file.File_id,&file.Filename, &file.Url, &file.UploadedAt, &file.Expiresat, &file.Size)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -138,4 +138,35 @@ func GetFiles(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(files)
+}
+
+
+//function to share file by file id
+func ShareFile(w http.ResponseWriter, r *http.Request) {
+	db := db.ConnectDB()
+	defer db.Close()
+
+	var file_id ShareFileRequest
+	err := json.NewDecoder(r.Body).Decode(&file_id)
+	if err != nil {
+		http.Error(w, "Provide proper file id", http.StatusBadRequest)
+		return
+	}
+
+	username, ok := r.Context().Value("username").(string)
+	if !ok {
+		http.Error(w, "Username not found in context", http.StatusInternalServerError)
+		return
+	}
+
+	row := db.QueryRow(`SELECT fileid, url, expiry_at FROM userfiles WHERE fileid=$1 AND userid=(SELECT userid FROM users WHERE username=$2)`, file_id.File_id, username)
+	
+	var file ShareFileResponse
+	err = row.Scan(&file.File_id, &file.Url, &file.Expiresat)
+	if err != nil && err.Error() == "sql: no rows in result set" {
+		http.Error(w, "No files found on given file id", http.StatusBadRequest)
+		return
+	}
+
+	json.NewEncoder(w).Encode(file)
 }

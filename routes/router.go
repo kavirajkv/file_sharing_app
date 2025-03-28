@@ -19,6 +19,7 @@ func Router() *mux.Router {
 	// routes for file sharing
 	r.HandleFunc("/upload", auth.Authenticate(fileshare.Uploadfile)).Methods("POST")
 	r.HandleFunc("/files", auth.Authenticate(fileshare.GetFiles)).Methods("GET")
+	r.HandleFunc("/share", auth.Authenticate(fileshare.ShareFile)).Methods("GET")
 
 	return r
 }
