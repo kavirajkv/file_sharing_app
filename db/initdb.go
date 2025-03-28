@@ -15,7 +15,8 @@ import (
 // db connection based on database name
 func ConnectDB() *sql.DB {
 	db_pass := os.Getenv("PG_PASSWORD")
-	dsn := fmt.Sprintf("postgres://postgres:%v@localhost/fileshare?sslmode=disable", db_pass)
+	url:=os.Getenv("PG_HOST")
+	dsn := fmt.Sprintf("postgres://postgres:%v@%v/fileshare?sslmode=disable", db_pass,url)
 	db, err := sql.Open("postgres", dsn)
 	if err != nil {
 		log.Fatal("failed to connect database", err)
