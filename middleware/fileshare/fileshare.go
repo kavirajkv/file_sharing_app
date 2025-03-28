@@ -170,3 +170,31 @@ func ShareFile(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(file)
 }
+
+//function to delete file by file id
+func DeleteFile(w http.ResponseWriter, r *http.Request) {
+	db := db.ConnectDB()
+	defer db.Close()
+
+	var file_id ShareFileRequest
+	err := json.NewDecoder(r.Body).Decode(&file_id)
+	if err != nil {
+		http.Error(w, "Provide proper file id", http.StatusBadRequest)
+		return
+	}
+
+	username, ok := r.Context().Value("username").(string)
+	if !ok {
+		http.Error(w, "Username not found in context", http.StatusInternalServerError)
+		return
+	}
+
+	_, err = db.Exec(`DELETE FROM userfiles WHERE fileid=$1 AND userid=(SELECT userid FROM users WHERE username=$2)`, file_id.File_id, username)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	msg := Response{Message: "File deleted successfully"}
+	json.NewEncoder(w).Encode(msg)
+}
