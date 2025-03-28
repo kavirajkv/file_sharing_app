@@ -101,3 +101,29 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(msg)
 		
 }
+
+
+func authenticate(next http.HandlerFunc)http.HandlerFunc{
+	return func(w http.ResponseWriter,r *http.Request){
+		cookie,err:=r.Cookie("token")
+		if err!=nil{
+			http.Error(w,"Unauthorized access",http.StatusUnauthorized)
+			return
+		}
+
+		tokenstr:=cookie.Value
+
+		claim:=&Claims{}
+
+		token,err:=jwt.ParseWithClaims(tokenstr,claim,func(t *jwt.Token) (interface{}, error) {
+			return []byte(os.Getenv("JWT_SECRET")),nil})
+
+		if !token.Valid{
+			http.Error(w,"Invalid token",http.StatusUnauthorized)
+			return
+		}
+
+		next(w,r)
+		
+	}
+}
