@@ -8,6 +8,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"time"
 	"os"
+	"context"
 )
 
 
@@ -123,7 +124,9 @@ func authenticate(next http.HandlerFunc)http.HandlerFunc{
 			return
 		}
 
-		next(w,r)
+		//here after authencation username is send to the next route
+		ctx:=context.WithValue(r.Context(),"username",claim.Username)
+		next(w,r.WithContext(ctx))
 		
 	}
 }
