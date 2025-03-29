@@ -24,6 +24,7 @@ func main() {
 	db.Initdb()
 	fmt.Println("Database initialized..")
 	fileshare.InitRedis()
+	db.CleanupScheduler()
 
 	r := routes.Router()
 	fmt.Println("Server started on port 8080")
