@@ -18,7 +18,7 @@ services:
       - POSTGRES_DB=fileshare
 
   go_app:
-    image : kavirajkv/fileshare:v1
+    image : kavirajkv/fileshare:v2
     container_name: fileshare
     ports:
       - "8080:8080"
@@ -26,10 +26,10 @@ services:
       - PG_PASSWORD=postgres
       - PG_HOST=db
       - PG_PORT=5432
-      - JWT_SECRET=crocodileEgg
+      - REDIS_URL=redis
+      - JWT_SECRET=
       - AWS_S3_REGION=
       - AWS_S3_BUCKET=
-      - REDIS_URL=redis
       - AWS_ACCESS_KEY_ID=
       - AWS_SECRET_ACCESS_KEY=
     depends_on:
