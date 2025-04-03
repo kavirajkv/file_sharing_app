@@ -2,15 +2,16 @@ package routes
 
 import (
 	"fileshare/middleware/auth"
-	"github.com/gorilla/mux"
 	"fileshare/middleware/fileshare"
-	"golang.org/x/time/rate"
+	"golang.org/x/time/rate" 
 	"net/http"
 	"time"
 )
 
-func Router() *mux.Router {
-	r := mux.NewRouter()
+func Router() *http.ServeMux {
+	r:=http.NewServeMux()
+
+	
 
 	limiter := rate.NewLimiter(rate.Every(time.Minute), 100)
 	//rate limiting middleware to allow only 100 request per minute as required 
@@ -25,18 +26,18 @@ func Router() *mux.Router {
 	}
 
 	// route to check server status
-	r.HandleFunc("/status", fileshare.Status).Methods("GET")
+	r.HandleFunc("GET /status",fileshare.Status)
 	
-	// routes for user authentication
-	r.Handle("/signup", rateLimitMiddleware(http.HandlerFunc(auth.Signup))).Methods("POST")
-	r.Handle("/login", rateLimitMiddleware(http.HandlerFunc(auth.Login))).Methods("POST")
+	// // routes for user authentication
+	r.Handle("POST /signup", rateLimitMiddleware(http.HandlerFunc(auth.Signup)))
+	r.Handle("POST /login", rateLimitMiddleware(http.HandlerFunc(auth.Login)))
 
-	// routes for file sharing
-	r.Handle("/upload", rateLimitMiddleware(http.HandlerFunc(auth.Authenticate(fileshare.Uploadfile)))).Methods("POST")
-	r.Handle("/files", rateLimitMiddleware(http.HandlerFunc(auth.Authenticate(fileshare.GetFiles)))).Methods("GET")
-	r.Handle("/share", rateLimitMiddleware(http.HandlerFunc(auth.Authenticate(fileshare.ShareFile)))).Methods("GET")
-	r.Handle("/delete", rateLimitMiddleware(http.HandlerFunc(auth.Authenticate(fileshare.DeleteFile)))).Methods("DELETE")
-	r.Handle("/search", rateLimitMiddleware(http.HandlerFunc(auth.Authenticate(fileshare.SearchFile)))).Methods("GET")
+	// // routes for file sharing
+	r.Handle("POST /upload", rateLimitMiddleware(http.HandlerFunc(auth.Authenticate(fileshare.Uploadfile))))
+	r.Handle("GET /files", rateLimitMiddleware(http.HandlerFunc(auth.Authenticate(fileshare.GetFiles))))
+	r.Handle("GET /share", rateLimitMiddleware(http.HandlerFunc(auth.Authenticate(fileshare.ShareFile))))
+	r.Handle("DELETE /delete", rateLimitMiddleware(http.HandlerFunc(auth.Authenticate(fileshare.DeleteFile))))
+	r.Handle("GET /search", rateLimitMiddleware(http.HandlerFunc(auth.Authenticate(fileshare.SearchFile))))
 
 	return r
 }

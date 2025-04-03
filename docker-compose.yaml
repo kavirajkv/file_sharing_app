@@ -21,7 +21,7 @@ services:
     image : kavirajkv/fileshare:v2
     container_name: fileshare
     ports:
-      - "8080:8080"
+      - "80:8080"
     environment:
       - PG_PASSWORD=postgres
       - PG_HOST=db
