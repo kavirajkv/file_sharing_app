@@ -35,16 +35,6 @@ To install and run this application, follow these steps:
 
 ## Usage
 
-1. This application is also hosted in aws. You can also use those API endpoints to directly access the application without running in your local machine.
-
-
-## API Documentation
-
-- Cloud hosted application URL
-    ```
-    http://fileshare.kavirajk.me/<endpoint>
-    ```
-
 ## API Documentation
 
 1. To check server status
